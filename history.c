@@ -1,28 +1,31 @@
 #include <stdio.h>
 #include <string.h>
 #include "history.h"
+#include <stdlib.h>
 
 static struct Cmd* hist;	//pointer to a Cmd struct called hist
-static char counter = 0;	//counter for the number of history entries
+static int counter = 0;	//counter for the number of history entries
 
-void int_history(void) {			//Builds data structures for recording cmd history
+void init_history(void) {			//Builds data structures for recording cmd history
 	hist = (struct Cmd*) malloc(sizeof(struct Cmd) * MAXHISTORY);
 }
 
 void add_history(char *cmd, int exitStatus) {	//Adds an entry to the history
 	
-	if (counter >= 10) {
+	if (counter >= MAXHISTORY) {
+		free(hist[0].cmd);
 		/* Shift all entries down one */
 		for (int i = 0; i < MAXHISTORY - 1; i++) {
-			strncpy(hist[i].cmd, hist[i + 1].cmd, sizeof(hist[i + 1].cmd));
+			hist[i].cmd = hist[i+ 1].cmd;
 			hist[i].exitStatus = hist[i + 1].exitStatus;
+
 		}
-		strncpy(hist[MAXHISTORY - 1].cmd, cmd, sizeof(cmd));
+		hist[MAXHISTORY - 1].cmd = cmd;
 		hist[MAXHISTORY - 1].exitStatus = exitStatus;
 
 	} else {
 
-		strncpy(hist[counter].cmd, cmd, sizeof(cmd));
+		hist[counter].cmd = cmd;
 		hist[counter].exitStatus = exitStatus;
 
 		counter++;
@@ -31,8 +34,10 @@ void add_history(char *cmd, int exitStatus) {	//Adds an entry to the history
 }
 
 void clear_history(void) {			//Frees all malloc’d memory in the history
+	for (int i = 0; i < MAXHISTORY; i++) {
+		free(hist[i].cmd);
+	}
 	free(hist);
-	hist = NULL;
 }
 
 void print_history(int firstSequenceNumber) {	//Prints the history to stdout

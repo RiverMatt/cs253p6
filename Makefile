@@ -1,7 +1,7 @@
 # Makefile for smash.c 
 
 EXE = smash
-OBJS = smash.o command.o
+OBJS = smash.o command.o history.o
 
 CC = gcc
 CFLAGS = -Wall -std=c99
