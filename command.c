@@ -40,6 +40,8 @@ void executeCommand(char* str) {
 		token = strtok(NULL, " ");	// get the next token
 
 	}
+	args[i] = NULL;
+
 	if (strcmp(args[0], "exit") == 0) {
 		free(copy);
 		clear_history();
@@ -69,7 +71,7 @@ void executeCommand(char* str) {
 	} else {
 		/* legacy code from before smash could handle external commands
 		for (int j = 0; j < i; j++) {
-			printf("[%d] %s\n", j, args[j]);
+			printf("[%2d] %s\n", j, args[j]);
 		}
 		*/
 		
@@ -86,19 +88,15 @@ void executeCommand(char* str) {
 	
 }
 
-int executeExternalCommand(char* args[1024]) {	// do I need to specify the size of 1024?
+int executeExternalCommand(char* args[1026]) {
 	
-	setvbuf(stdin, NULL, _IONBF, 0);
-	setvbuf(stdout, NULL, _IONBF, 0);
-	setvbuf(stderr, NULL, _IONBF, 0);
-
 	int pid = fork();
 
 	if (pid == 0) {			// Child process
 		int result = execvp(args[0], args); // first parameter is the file descriptor (command), second is args array
-		if (result == -1) {
-			return -1;
-		}
+//		if (result == -1) {
+//			return -1;
+//		}
 		return result;
 	} else if (pid > 0) {		// Parent process
 		int exitStatus;

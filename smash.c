@@ -8,6 +8,10 @@ int main(void) {
 	char bfr[MAXLINE];
 	fputs("$ ", stderr);
 	init_history();
+	setvbuf(stdin, NULL, _IONBF, 0);
+	setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stderr, NULL, _IONBF, 0);
+
 	while (fgets(bfr, MAXLINE, stdin) != NULL) {
 		bfr[strlen(bfr) - 1] = '\0'; 		// replace the newline char with NUL
 		if (strlen(bfr) != 0) {
