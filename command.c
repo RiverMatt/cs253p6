@@ -10,11 +10,15 @@
 #include <unistd.h>
 #include <errno.h>
 #include "history.h"
+#include <sys/types.h>
+#include <sys/wait.h>
+
 
 static int cmdcount = 0;
 
 void executeCommand(char* str) {
-
+	
+	/* for history */
 	int firstSequenceNumber = 1;
 
 	if (cmdcount >= MAXHISTORY) {
@@ -22,17 +26,18 @@ void executeCommand(char* str) {
 	}  
 	cmdcount++;
 
-	char* copy = strndup(str, strlen(str));
+	char* copy = strndup(str, strlen(str));	// copy of the command string
 	
-	char* args[MAXLINE];
+	char* args[MAXLINE];			// array to store argument strings
 
-	char* token = strtok(str, " ");
-
+	char* token = strtok(str, " ");		// token for the first arg
+	
+	/* putting the args into an args array */
 	int i = 0;
 	while (token != NULL) {
 		args[i] = token;
 		i++;
-		token = strtok(NULL, " ");
+		token = strtok(NULL, " ");	// get the next token
 
 	}
 	if (strcmp(args[0], "exit") == 0) {
@@ -53,7 +58,7 @@ void executeCommand(char* str) {
 
 		} else {
 			
-			fprintf(stderr, "Invalid Command\n");
+			fprintf(stderr, "Invalid command\n");
 			add_history(copy, 1);
 		}
 	} else if (strcmp(args[0], "history") == 0) {
@@ -62,12 +67,47 @@ void executeCommand(char* str) {
 		add_history(copy, 0);
 
 	} else {
+		/* legacy code from before smash could handle external commands
 		for (int j = 0; j < i; j++) {
 			printf("[%d] %s\n", j, args[j]);
 		}
+		*/
+		
+		int extCmd = executeExternalCommand(args);
+		
 		add_history(copy, 127);
+
+		if (extCmd == -1) {
+			fprintf(stderr, "Invalid external command\n");
+		}
 
 	}
 
+	
+}
+
+int executeExternalCommand(char* args[1024]) {	// do I need to specify the size of 1024?
+	
+	setvbuf(stdin, NULL, _IONBF, 0);
+	setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stderr, NULL, _IONBF, 0);
+
+	int pid = fork();
+
+	if (pid == 0) {			// Child process
+		int result = execvp(args[0], args); // first parameter is the file descriptor (command), second is args array
+		if (result == -1) {
+			return -1;
+		}
+		return result;
+	} else if (pid > 0) {		// Parent process
+		int exitStatus;
+		wait(&exitStatus);
+		return exitStatus;
+	} else {
+		perror("Fork failed!");
+	}
+
+	return -1;
 	
 }
