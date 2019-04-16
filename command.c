@@ -97,7 +97,8 @@ int executeExternalCommand(char* args[1026]) {
 //		if (result == -1) {
 //			return -1;
 //		}
-		return result;
+		perror(args[0]);
+		exit(result);
 	} else if (pid > 0) {		// Parent process
 		int exitStatus;
 		wait(&exitStatus);
