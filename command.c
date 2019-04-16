@@ -77,11 +77,7 @@ void executeCommand(char* str) {
 		
 		int extCmd = executeExternalCommand(args);
 		
-		add_history(copy, 127);
-
-		if (extCmd == -1) {
-			fprintf(stderr, "Invalid external command\n");
-		}
+		add_history(copy, extCmd);
 
 	}
 
@@ -93,16 +89,17 @@ int executeExternalCommand(char* args[1026]) {
 	int pid = fork();
 
 	if (pid == 0) {			// Child process
-		int result = execvp(args[0], args); // first parameter is the file descriptor (command), second is args array
-//		if (result == -1) {
-//			return -1;
-//		}
+		execvp(args[0], args); // first parameter is the file descriptor (command), second is args array
 		perror(args[0]);
-		exit(result);
+		exit(127);
 	} else if (pid > 0) {		// Parent process
 		int exitStatus;
 		wait(&exitStatus);
-		return exitStatus;
+		if (exitStatus != -1) {
+			return 127;
+		} else {
+			return exitStatus;
+		}
 	} else {
 		perror("Fork failed!");
 	}
