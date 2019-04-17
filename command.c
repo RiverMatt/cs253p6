@@ -89,7 +89,7 @@ int executeExternalCommand(char* args[1026]) {
 	int pid = fork();
 
 	if (pid == 0) {			// Child process
-		execvp(args[0], args); // first parameter is the file descriptor (command), second is args array
+		execvp(args[0], args);	// first parameter is the file descriptor (command), second is args array
 		perror(args[0]);
 		exit(127);
 	} else if (pid > 0) {		// Parent process
